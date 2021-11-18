@@ -1,0 +1,66 @@
+version: "3"
+
+services:
+  backend_store:
+    image: postgres:13
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    expose:
+      - ${POSTGRES_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_is_ready -U ${POSTGRES_USER} --db-name ${POSTGRES_DB} -q"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mlflow_server:
+    image: popszer/mlflow:1.2.0
+    build:
+      context: mlflow
+      dockerfile: DockerFile
+    depends_on:
+      - backend_store
+    restart: always
+    env_file:
+      - .env
+    environment:
+      ML_FLOW_PORT: ${ML_FLOW_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ARTIFACT_ROOT_URI: ${ARTIFACT_ROOT_URI}
+    ports:
+      - "5000:5000"
+    command:
+    - sh
+    - -c
+    - mlflow server
+      --backend-store-uri "postgresql://"$${POSTGRES_USER:?err}":"$${POSTGRES_PASSWORD:?err}"@backend_store:"$${POSTGRES_PORT:?err}"/"$${POSTGRES_DB:?err}""
+      --default-artifact-root "$${ARTIFACT_ROOT_URI:?err}"
+      --host 0.0.0.0
+      --port "$${ML_FLOW_PORT}"
+
+
+  nginx:
+      restart: always
+      build:
+        context: nginx
+        dockerfile: Dockerfile
+      image: mlflow_nginx
+      container_name: mlflow_nginx
+      ports:
+          - "80:80"
+      depends_on:
+          - mlflow_server
+
+volumes:
+  postgres_data:
