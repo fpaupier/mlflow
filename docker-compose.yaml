@@ -5,7 +5,8 @@ services:
   minio:
     image: quay.io/minio/minio:RELEASE.2021-11-24T23-19-33Z
     container_name: minio
-    command: server --console-address ":9000" http://minio/data
+    working_dir: "/minio/storage"
+    command: server /minio/storage
     ports:
       - "9000:9000"
     expose:
