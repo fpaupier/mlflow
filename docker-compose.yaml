@@ -10,6 +10,7 @@ services:
     command: server --console-address ":9001" /minio/storage
     ports:
       - "9000:9000"
+      - "9001:9001"
     expose:
       - "9000"
       - "9001"  # interface exposed to ease recovering of artifacts if failure on ML Flow UI
