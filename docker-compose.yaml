@@ -7,7 +7,7 @@ services:
     container_name: minio
     hostname: minio1
     working_dir: "/minio/storage"
-    command: server --console-address ":9001" http://minio1/data
+    command: server --console-address ":9001" /minio/storage
     ports:
       - "9000:9000"
     expose:
