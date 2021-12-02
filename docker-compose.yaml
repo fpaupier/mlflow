@@ -50,7 +50,7 @@ services:
       - /srv/docker/mlflow/postgres_data:/var/lib/postgresql/data
 
   mlflow_server:
-    image: popszer/mlflow:1.2.0
+    image: popszer/mlflow:1.2.1
     build:
       context: mlflow
       dockerfile: DockerFile
