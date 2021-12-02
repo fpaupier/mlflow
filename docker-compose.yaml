@@ -1,6 +1,28 @@
 version: "3"
 
 services:
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2021-11-24T23-19-33Z
+    container_name: minio
+    command: server --console-address ":9000" http://minio/data
+    ports:
+      - "9000:9000"
+    expose:
+      - "9000"  # interface exposed to ease recovering of artifacts if failure on ML Flow UI
+    env_file:
+      - .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    volumes:
+      - /srv/docker/mlflow/minio_data:/minio/storage
+
   backend_store:
     image: postgres:13
     restart: always
@@ -19,7 +41,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - /srv/docker/mlflow/postgres_data:/var/lib/postgresql/data
 
   mlflow_server:
     image: popszer/mlflow:1.2.0
@@ -28,39 +50,20 @@ services:
       dockerfile: DockerFile
     depends_on:
       - backend_store
+      - minio
     restart: always
     env_file:
       - .env
     environment:
-      ML_FLOW_PORT: ${ML_FLOW_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       ARTIFACT_ROOT_URI: ${ARTIFACT_ROOT_URI}
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      MLFLOW_S3_IGNORE_TLS: "true" # If the MinIO server is configured with using SSL self-signed or signed using some internal-only CA certificate
     ports:
-      - "5000:5000"
-    command:
-    - sh
-    - -c
-    - mlflow server
-      --backend-store-uri "postgresql://"$${POSTGRES_USER:?err}":"$${POSTGRES_PASSWORD:?err}"@backend_store:"$${POSTGRES_PORT:?err}"/"$${POSTGRES_DB:?err}""
-      --default-artifact-root "$${ARTIFACT_ROOT_URI:?err}"
-      --host 0.0.0.0
-      --port "$${ML_FLOW_PORT}"
-
-
-  nginx:
-      restart: always
-      build:
-        context: nginx
-        dockerfile: Dockerfile
-      image: mlflow_nginx
-      container_name: mlflow_nginx
-      ports:
-          - "80:80"
-      depends_on:
-          - mlflow_server
-
-volumes:
-  postgres_data:
+      - "10140:5000"  # Expose port 10140 for ML FLow UI
+    command: ./mlflow-entrypoint.sh

@@ -1,10 +1,11 @@
-=============================================
-MLflow: A Machine Learning Lifecycle Platform
-=============================================
+# ML Flow for prod
+
+A dockerized ML Flow server with [minio](https://min.io/) as artefact server and PostgresSQL for backend storage.
+
+ML Flow - _A Machine Learning Lifecycle Platform_
+
 
 A docker-compose ready version of ML Flow.
-
-_Using PostgresSQL for the backend storage and SFTP for artefact storage._
 
 To get started:
 
@@ -12,17 +13,21 @@ To get started:
 ```shell
 cp .env.example .env
 ```
-_Note: if you change the `ML_FLOW_PORT` env var, also update the port defined in `nginx/mlflow.conf` accordingly.
 
 2. Start the service with docker-compose:
+Todo. For example, if you have a MinIO server at 1.2.3.4 on port 9000:
+```bash
+export MLFLOW_S3_ENDPOINT_URL=http://1.2.3.4:9000
+export MLFLOW_S3_IGNORE_TLS=true  # If the MinIO server is configured with using SSL self-signed or signed using some internal-only CA certificate
+export AWS_DEFAULT_REGION=eu-west-3
 ```
 docker-compose up -d
 ```
 
 ## Original project doc
 
-MLflow is a platform to streamline machine learning development, including tracking experiments, packaging code
-into reproducible runs, and sharing and deploying models. MLflow offers a set of lightweight APIs that can be
+ML Flow is a platform to streamline machine learning development, including tracking experiments, packaging code
+into reproducible runs, and sharing and deploying models. ML Flow offers a set of lightweight APIs that can be
 used with any existing machine learning application or library (TensorFlow, PyTorch, XGBoost, etc), wherever you
 currently run ML code (e.g. in notebooks, standalone applications or the cloud). MLflow's current components are:
 
