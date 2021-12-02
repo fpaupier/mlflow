@@ -18,8 +18,33 @@ if [ -z $AWS_SECRET_ACCESS_KEY ]; then
   exit 1
 fi
 
+if [ -z "$POSTGRES_USER" ]; then
+  echo >&2 "POSTGRES_USER must be set"
+  exit 1
+fi
+
+if [ -z "$POSTGRES_PASSWORD" ]; then
+  echo >&2 "POSTGRES_PASSWORD must be set"
+  exit 1
+fi
+
+if [ -z "$POSTGRES_PORT" ]; then
+  echo >&2 "POSTGRES_PORT must be set"
+  exit 1
+fi
+
+if [ -z "$POSTGRES_DB" ]; then
+  echo >&2 "POSTGRES_DB must be set"
+  exit 1
+fi
+
+if [ -z "$ARTIFACT_ROOT_URI" ]; then
+  echo >&2 "ARTIFACT_ROOT_URI must be set"
+  exit 1
+fi
+
 mlflow server \
-      --backend-store-uri "postgresql://"$${POSTGRES_USER:?err}":"$${POSTGRES_PASSWORD:?err}"@backend_store:"$${POSTGRES_PORT:?err}"/"$${POSTGRES_DB:?err}"" \
-      --default-artifact-root "$${ARTIFACT_ROOT_URI:?err}" \
+      --backend-store-uri "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@backend_store:$POSTGRES_PORT/$POSTGRES_DB" \
+      --default-artifact-root "$ARTIFACT_ROOT_URI" \
       --host 0.0.0.0 \
       --port 5000
