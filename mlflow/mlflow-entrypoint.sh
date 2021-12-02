@@ -47,4 +47,5 @@ mlflow server \
       --backend-store-uri "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@backend_store:$POSTGRES_PORT/$POSTGRES_DB" \
       --default-artifact-root "$ARTIFACT_ROOT_URI" \
       --host 0.0.0.0 \
-      --port 5000
+      --port 5000 \
+      --gunicorn-opts "--timeout 180"
