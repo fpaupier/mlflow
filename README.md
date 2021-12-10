@@ -1,8 +1,6 @@
 # ML Flow for prod
 
 ![](https://badgen.net/badge/mlflow/10140/blue?label=MLflow%20UI%20port)
-![](https://badgen.net/badge/minio/9001/blue?label=minio%20console%20port)
-![](https://badgen.net/badge/minio/9000/blue?label=minio%20API%20port)
 
 A dockerized [ML Flow](https://mlflow.org/) server using a S3 server for artifacts (see [minio-s3-server](https://github.com/fpaupier/minio-s3-server)) 
 and [PostgreSQL](https://www.postgresql.org/) for backend storage.
