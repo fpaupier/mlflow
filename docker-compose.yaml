@@ -29,7 +29,6 @@ services:
       dockerfile: DockerFile
     depends_on:
       - backend_store
-      - minio
     restart: always
     env_file:
       - .env
